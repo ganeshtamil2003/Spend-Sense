@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { format, isToday, isYesterday } from 'date-fns';
-import { api } from '../api';
+import { api } from '../services/api';
 
 const CATEGORIES = [
   { id: 'fruits', name: 'Fruits', icon: '🍎', color: '#4CAF50' },

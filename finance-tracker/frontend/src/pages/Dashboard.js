@@ -3,7 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { api } from '../api';
+import { api } from '../services/api';
 import { format, parseISO } from 'date-fns';
 
 const PERIODS = [

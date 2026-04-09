@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Dashboard from './components/Dashboard';
+import Dashboard from './pages/Dashboard';
 import AddExpense from './components/AddExpense';
-import ExpenseList from './components/ExpenseList';
+import ExpenseList from './pages/ExpenseList';
+import Auth from './pages/Auth';
+import { useAuth } from './context/AuthContext';
+import { supabase } from './services/supabaseClient';
 import './App.css';
 
+function PrivateRoute({ children }) {
+  const { session } = useAuth();
+  return session ? children : <Navigate to="/login" replace />;
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('add');
+  const { session } = useAuth();
+  const location = useLocation();
 
   return (
     <div className="app">
@@ -14,33 +24,41 @@ function App() {
         style: { background: '#1e2235', color: '#e2e8f0', border: '1px solid #2d3452' }
       }} />
       
-      <header className="app-header">
-        <div className="header-inner">
-          <div className="brand">
-            <span className="brand-icon">💸</span>
-            <div>
-              <h1>SpendSense</h1>
-              <p>Personal Finance Tracker</p>
+      {session && (
+        <header className="app-header">
+          <div className="header-inner">
+            <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="brand-icon" style={{ fontSize: '24px' }}>💸</span>
+              <div>
+                <h1 style={{ margin: 0, fontSize: '18px' }}>SpendSense</h1>
+                <p style={{ margin: 0, fontSize: '11px', color: 'var(--text2)' }}>Personal Finance Tracker</p>
+              </div>
             </div>
+            <nav className="nav">
+              <Link to="/" className={`nav-btn ${location.pathname === '/' ? 'active' : ''}`} style={{ textDecoration: 'none' }}>
+                <span>➕</span> Add
+              </Link>
+              <Link to="/dashboard" className={`nav-btn ${location.pathname === '/dashboard' ? 'active' : ''}`} style={{ textDecoration: 'none' }}>
+                <span>📊</span> Dashboard
+              </Link>
+              <Link to="/history" className={`nav-btn ${location.pathname === '/history' ? 'active' : ''}`} style={{ textDecoration: 'none' }}>
+                <span>📋</span> History
+              </Link>
+              <button className="nav-btn" onClick={() => supabase.auth.signOut()} style={{ cursor: 'pointer' }}>
+                <span>🚪</span> Logout
+              </button>
+            </nav>
           </div>
-          <nav className="nav">
-            <button className={`nav-btn ${activeTab === 'add' ? 'active' : ''}`} onClick={() => setActiveTab('add')}>
-              <span>➕</span> Add
-            </button>
-            <button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-              <span>📊</span> Dashboard
-            </button>
-            <button className={`nav-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-              <span>📋</span> History
-            </button>
-          </nav>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className="main-content">
-        {activeTab === 'add' && <AddExpense />}
-        {activeTab === 'dashboard' && <Dashboard />}
-        {activeTab === 'history' && <ExpenseList />}
+      <main className={session ? "main-content" : ""}>
+        <Routes>
+          <Route path="/login" element={!session ? <Auth /> : <Navigate to="/" replace />} />
+          <Route path="/" element={<PrivateRoute><AddExpense /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/history" element={<PrivateRoute><ExpenseList /></PrivateRoute>} />
+        </Routes>
       </main>
     </div>
   );

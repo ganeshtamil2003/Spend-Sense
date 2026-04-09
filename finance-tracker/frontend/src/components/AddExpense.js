@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { api } from '../api';
+import { api } from '../services/api';
 
 const QUICK_CATEGORIES = [
   { id: 'fruits', name: 'Fruits', icon: '🍎' },
