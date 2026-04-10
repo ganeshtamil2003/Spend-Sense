@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import toast from 'react-hot-toast';
 
@@ -7,6 +7,29 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const rules = [
+      'Snapchat', 'FBAV', 'FBAN', 'Instagram', 'Twitter', 'LinkedInApp', 
+      'WebView', 'Android.*(wv|\\.0\\.0\\.0)'
+    ];
+    const isApp = rules.some(rule => new RegExp(rule, 'ig').test(userAgent));
+    const isApple = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    
+    if (isApp) {
+      if (!isApple) {
+        // Attempt Android breakout automatically via Intent URI
+        const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+        window.location.href = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+      }
+    }
+    
+    setIsInAppBrowser(isApp);
+    setIsIOS(isApple);
+  }, []);
 
   const handleGoogleLogin = async () => {
     try {
@@ -54,11 +77,23 @@ export default function Auth() {
           </p>
         </div>
 
+        {isInAppBrowser && (
+          <div style={{ background: 'rgba(255, 68, 68, 0.1)', color: '#ff4444', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', textAlign: 'left', border: '1px solid rgba(255, 68, 68, 0.2)' }}>
+            <strong>⚠️ Access blocked for Google Sign in</strong><br/>
+            {isIOS ? 
+              'Snapchat/Instagram prevents Google login. Please click the 3 dots (•••) at the top right and select "Open in System Browser" or "Open in Safari".' 
+              : 
+              'Redirecting you to Google Chrome... If it does not redirect, click the 3 dots (•••) top right and select "Open in Browser".'
+            }
+          </div>
+        )}
+
         <button
           onClick={handleGoogleLogin}
           type="button"
-          style={{ width: '100%', marginBottom: '16px', padding: '12px', borderRadius: 'var(--radius-sm)', background: 'white', color: 'black', border: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', transition: 'transform 0.2s' }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+          disabled={isInAppBrowser && isIOS}
+          style={{ width: '100%', marginBottom: '16px', padding: '12px', borderRadius: 'var(--radius-sm)', background: 'white', color: 'black', border: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: isInAppBrowser && isIOS ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', transition: 'transform 0.2s', opacity: isInAppBrowser && isIOS ? 0.6 : 1 }}
+          onMouseOver={(e) => { if (!(isInAppBrowser && isIOS)) e.currentTarget.style.transform = 'translateY(-1px)' }}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 18 }} />
@@ -112,3 +147,4 @@ export default function Auth() {
     </div>
   );
 }
+
