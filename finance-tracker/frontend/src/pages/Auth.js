@@ -19,19 +19,33 @@ export default function Auth() {
     const isApp = rules.some(rule => new RegExp(rule, 'ig').test(userAgent));
     const isApple = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
     
-    if (isApp) {
-      if (!isApple) {
-        // Attempt Android breakout automatically via Intent URI
-        const currentUrl = window.location.href.replace(/^https?:\/\//, '');
-        window.location.href = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
-      }
-    }
-    
     setIsInAppBrowser(isApp);
     setIsIOS(isApple);
   }, []);
 
+  const triggerAndroidBreakout = () => {
+    const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+    
+    // Method 1: standard intent
+    window.location.href = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+    
+    // Fallback: create hidden link and click it after a tiny delay
+    setTimeout(() => {
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = `intent://${currentUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+      document.body.appendChild(fallbackLink);
+      fallbackLink.click();
+      document.body.removeChild(fallbackLink);
+    }, 100);
+  };
+
   const handleGoogleLogin = async () => {
+    // If it's Android trapped in a webview, clicking "Google Auth" should try to break out instead!
+    if (isInAppBrowser && !isIOS) {
+      triggerAndroidBreakout();
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -83,7 +97,15 @@ export default function Auth() {
             {isIOS ? 
               'Snapchat/Instagram prevents Google login. Please click the 3 dots (•••) at the top right and select "Open in System Browser" or "Open in Safari".' 
               : 
-              'Redirecting you to Google Chrome... If it does not redirect, click the 3 dots (•••) top right and select "Open in Browser".'
+              <div style={{ marginTop: '8px' }}>
+                Snapchat blocks Google login here.<br/><br/>
+                <button 
+                  onClick={triggerAndroidBreakout}
+                  style={{ background: '#ff4444', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}
+                >
+                  Click to Open Setup in Chrome
+                </button>
+              </div>
             }
           </div>
         )}
