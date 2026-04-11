@@ -99,8 +99,11 @@ export default function AddExpense() {
       setSmartCategory(null);
       setNote('');
       
-      // Update today's total
-      setTodayTotal(prev => prev + parseFloat(amount));
+      // Update today's total ONLY if the selected date is today
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (date === todayStr) {
+        setTodayTotal(prev => prev + parseFloat(amount));
+      }
       
       if (amountRef.current) amountRef.current.focus();
     } catch (err) {
