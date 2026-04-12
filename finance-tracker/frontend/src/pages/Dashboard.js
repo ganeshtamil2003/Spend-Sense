@@ -189,12 +189,24 @@ export default function Dashboard() {
                       data={data.categoryBreakdown.slice(0, 8)}
                       cx="50%"
                       cy="50%"
-                      innerRadius={isMobile ? 55 : 70}
-                      outerRadius={isMobile ? 85 : 110}
+                      innerRadius={isMobile ? 45 : 70}
+                      outerRadius={isMobile ? 70 : 110}
                       paddingAngle={3}
                       dataKey="amount"
                       nameKey="name"
-                      label={isMobile ? false : ({ name, percentage }) => `${name} ${percentage}%`}
+                      label={(props) => {
+                        const { cx, cy, midAngle, outerRadius, name, percentage } = props;
+                        const RADIAN = Math.PI / 180;
+                        const radius = outerRadius + (isMobile ? 12 : 20);
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        const displayName = isMobile && name.length > 9 ? name.substring(0, 9) + '..' : name;
+                        return (
+                          <text x={x} y={y} fill="var(--text2)" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={isMobile ? 10 : 12}>
+                            {`${displayName} ${percentage}%`}
+                          </text>
+                        );
+                      }}
                       labelLine={false}
                     >
                       {data.categoryBreakdown.slice(0, 8).map((cat, i) => (
