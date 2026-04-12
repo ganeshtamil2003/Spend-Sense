@@ -60,6 +60,10 @@ function App() {
           <Route path="/history" element={<PrivateRoute><ExpenseList /></PrivateRoute>} />
         </Routes>
       </main>
+
+      <footer style={{ textAlign: 'center', padding: '20px 20px 40px', color: 'var(--text3)', fontSize: '13px', fontFamily: 'Space Grotesk, sans-serif' }}>
+        Designed & Developed with ❤️ by <a href="https://linkedin.com/in/ganesh-ram-m-410308213" target="_blank" rel="noreferrer" style={{ color: 'var(--text2)', textDecoration: 'none', fontWeight: 600 }}>Ganesh Ram M</a>
+      </footer>
     </div>
   );
 }
