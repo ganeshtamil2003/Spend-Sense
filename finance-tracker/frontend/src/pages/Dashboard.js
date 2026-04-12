@@ -20,6 +20,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -182,12 +189,12 @@ export default function Dashboard() {
                       data={data.categoryBreakdown.slice(0, 8)}
                       cx="50%"
                       cy="50%"
-                      innerRadius={70}
-                      outerRadius={110}
+                      innerRadius={isMobile ? 55 : 70}
+                      outerRadius={isMobile ? 85 : 110}
                       paddingAngle={3}
                       dataKey="amount"
                       nameKey="name"
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
+                      label={isMobile ? false : ({ name, percentage }) => `${name} ${percentage}%`}
                       labelLine={false}
                     >
                       {data.categoryBreakdown.slice(0, 8).map((cat, i) => (
