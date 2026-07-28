@@ -100,11 +100,13 @@ export const api = {
     
     const categoryMap = {};
     expenses.forEach(e => {
-      if (!categoryMap[e.category]) categoryMap[e.category] = 0;
-      categoryMap[e.category] += Number(e.amount);
+      if (!categoryMap[e.category]) categoryMap[e.category] = { amount: 0, items: [] };
+      categoryMap[e.category].amount += Number(e.amount);
+      categoryMap[e.category].items.push(e);
     });
     
-    const categoryBreakdown = Object.entries(categoryMap).map(([catId, amount]) => {
+    const categoryBreakdown = Object.entries(categoryMap).map(([catId, data]) => {
+      const amount = data.amount;
       const cat = CATEGORIES.find(c => c.id === catId) || { name: catId, icon: '📦', color: '#9E9E9E' };
       return {
         id: catId,
@@ -112,6 +114,7 @@ export const api = {
         icon: cat.icon,
         color: cat.color,
         amount,
+        items: data.items,
         percentage: total > 0 ? ((amount / total) * 100).toFixed(1) : 0
       };
     }).sort((a, b) => b.amount - a.amount);

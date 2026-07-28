@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [expandedCategory, setExpandedCategory] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
 
   useEffect(() => {
@@ -158,21 +159,43 @@ export default function Dashboard() {
               <div className="card-title">🗂️ Category Breakdown</div>
               <div className="cat-list">
                 {data.categoryBreakdown.map(cat => (
-                  <div className="cat-row" key={cat.id}>
-                    <div className="cat-icon-wrap" style={{ background: cat.color + '25' }}>
-                      {cat.icon}
-                    </div>
-                    <div className="cat-info">
-                      <div className="cat-name">{cat.name}</div>
-                      <div className="cat-bar-wrap">
-                        <div className="cat-bar" style={{ width: `${cat.percentage}%`, background: cat.color }} />
+                  <React.Fragment key={cat.id}>
+                    <div 
+                      className="cat-row" 
+                      style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+                      onClick={() => setExpandedCategory(prev => prev === cat.id ? null : cat.id)}
+                    >
+                      <div className="cat-icon-wrap" style={{ background: cat.color + '25' }}>
+                        {cat.icon}
+                      </div>
+                      <div className="cat-info">
+                        <div className="cat-name">{cat.name}</div>
+                        <div className="cat-bar-wrap">
+                          <div className="cat-bar" style={{ width: `${cat.percentage}%`, background: cat.color }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="cat-amount">{formatAmount(cat.amount)}</div>
+                        <div className="cat-pct">{cat.percentage}%</div>
                       </div>
                     </div>
-                    <div>
-                      <div className="cat-amount">{formatAmount(cat.amount)}</div>
-                      <div className="cat-pct">{cat.percentage}%</div>
-                    </div>
-                  </div>
+                    {expandedCategory === cat.id && (
+                      <div style={{ padding: '8px 20px 8px 52px', background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+                        {cat.items.map((item, idx) => (
+                          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: idx < cat.items.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.description || cat.name}</span>
+                              {item.note && <span style={{ fontSize: 11, color: 'var(--text2)' }}>{item.note}</span>}
+                              <span style={{ fontSize: 10, color: 'var(--text3)' }}>{format(parseISO(item.date), 'dd MMM')}</span>
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
+                              {formatAmount(item.amount)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
