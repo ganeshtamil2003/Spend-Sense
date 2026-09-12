@@ -19,6 +19,22 @@ export default function Auth() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: 'guestuser@spendsense.com',
+        password: '0987654321',
+      });
+      if (error) throw error;
+      toast.success('Logged in as Guest!');
+    } catch (error) {
+      toast.error(error.error_description || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -63,6 +79,16 @@ export default function Auth() {
         >
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 18 }} />
           Continue with Google
+        </button>
+
+        <button
+          onClick={handleGuestLogin}
+          disabled={loading}
+          type="button"
+          className="submit-btn"
+          style={{ width: '100%', marginBottom: '16px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+        >
+          {loading ? <div className="spinner" style={{ width: '20px', height: '20px', margin: 0 }} /> : '🧑‍💼 Login as Guest (Recruiter)'}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: 'var(--text3)' }}>
